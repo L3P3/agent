@@ -1,0 +1,21 @@
+{
+	"name": "@l3p3/agent",
+	"version": "0.1.0",
+	"description": "let llama do stuff to your machine",
+	"scripts": {
+		"start": "./agent.js"
+	},
+	"bin": {
+		"agent": "./agent.js"
+	},
+	"engines": {
+		"node": ">=5.2.0"
+	},
+	"keywords": [
+		"agent",
+		"cli",
+		"shell"
+	],
+	"author": "L3P3 <dev@l3p3.de> (https://l3p3.de)",
+	"license": "Zlib"
+}
