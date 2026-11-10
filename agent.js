@@ -6,7 +6,11 @@ const readFileSync = require('fs').readFileSync;
 const os = require('os');
 
 const IS_WINDOWS = process.platform === 'win32';
-const SHELL = IS_WINDOWS ? (process.env.ComSpec || process.env.COMSPEC || 'cmd.exe') : 'bash';
+const SHELL = (
+	IS_WINDOWS
+	?	process.env.ComSpec || process.env.COMSPEC || 'cmd.exe'
+	:	'bash'
+);
 
 let config = {};
 if (
@@ -50,8 +54,7 @@ const TOOLS = [{
 		},
 	},
 }];
-const FONT_GREY = '\x1b[90m';
-const FONT_GREY_FAT = '\x1b[90;1m';
+const FONT_COMMAND = '\x1b[92m';
 const FONT_NORMAL = '\x1b[0m';
 
 const IS_HTTPS = API.startsWith('https:');
@@ -126,7 +129,7 @@ const command_run = cmd => new Promise(resolve => {
 	});
 });
 
-const agent_run = prompt => {
+const agent_run = (prompt, quiet) => {
 	const messages = [
 		{
 			role: 'system',
@@ -166,14 +169,14 @@ const agent_run = prompt => {
 					let output;
 					if (tool_call.function.name === 'run_shell_command') {
 						const args = JSON.parse(tool_call.function.arguments);
-								console.log(FONT_GREY_FAT + (IS_WINDOWS ? '> ' : '$ ') + args.command + FONT_NORMAL);
+						if (!quiet) console.log(FONT_COMMAND + (IS_WINDOWS ? '> ' : '$ ') + args.command + FONT_NORMAL);
 						output = command_run(args.command);
 					}
 					else {
 						output = Promise.resolve(`[unknown tool: ${tool_call.function.name}]`);
 					}
 					return output.then(result => {
-						console.log(FONT_GREY + result + FONT_NORMAL);
+						if (!quiet) console.log(FONT_COMMAND + result + FONT_NORMAL);
 						messages.push({
 							role: 'tool',
 							tool_call_id: tool_call.id,
@@ -189,14 +192,20 @@ const agent_run = prompt => {
 	return next_request();
 }
 
-if (process.argv.length < 3) {
-	console.error('usage: agent <prompt>');
-	process.exit(1);
-}
+{
+	const args = process.argv.slice(2);
+	if (!args.length) {
+		console.error('usage: agent [-q] <prompt>');
+		process.exit(1);
+	}
+	const quiet = args[0] === '-q';
+	if (quiet) args.shift();
 
-agent_run(
-	process.argv.slice(2).join(' ')
-).catch(error => {
-	console.error(FONT_NORMAL + '\nerror:', error.message);
-	process.exit(1);
-});
+	agent_run(
+		args.join(' '),
+		quiet
+	).catch(error => {
+		console.error(FONT_NORMAL + '\nerror:', error.message);
+		process.exit(1);
+	});
+}

@@ -1,6 +1,6 @@
 {
 	"name": "@l3p3/agent",
-	"version": "0.1.0",
+	"version": "0.1.1",
 	"description": "let llama do stuff to your machine",
 	"scripts": {
 		"start": "./agent.js"
